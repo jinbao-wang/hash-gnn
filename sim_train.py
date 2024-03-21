@@ -9,7 +9,7 @@ import random
 
 from gen_datasets import GraphGen, get_graph_triplet_loader
 from model import GNN
-from tools import compute_distance, compute_loss, compute_similarity, auc_score, precision_recall_curve
+from tools import *
 from colorama import init, Fore
 
 
@@ -28,6 +28,7 @@ def fill_data_to_device(data_batch, device):
 
 def get_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--is_hash", type=bool, default=True)
     parser.add_argument("--n_node", "-n", type=int, default=20)
     parser.add_argument("--p_edge", "-p", type=float, default=0.2)
     parser.add_argument("--batch_size", "-b", type=int, default=40)
@@ -129,7 +130,12 @@ def hgnn():
 
         graph = torch.norm(vectors, dim=1).mean() / args.n_node
         splits = vectors.view(args.batch_size, 4, args.g_repr_dim).permute(1, 0, 2)
-        loss_tri = compute_loss(splits, margin=args.margin)    
+        
+        loss_tri = 0.
+        if args.is_hash:
+            loss_tri = compute_binary_loss(splits, margin=args.margin)
+        else:
+            loss_tri = compute_loss(splits, margin=args.margin)    
 
         loss = loss_tri + graph * args.graph_coffin
 
@@ -137,7 +143,10 @@ def hgnn():
         optimizer.step()
         scheduler.step()
 
-        g12, g13 = compute_distance(splits)
+        if args.is_hash:
+            splits = vector_to_binary(splits)
+
+        g12, g13 = compute_distance(splits, p=1)
         pos = g12.mean().item()
         neg = g13.mean().item()
         lr = scheduler.get_last_lr()
@@ -162,7 +171,11 @@ def hgnn():
                     vectors = model(data)
 
                 splits = vectors.view(-1, 4, args.g_repr_dim).permute(1, 0, 2)
-                score = compute_similarity(splits)
+                if args.is_hash:
+                    splits = vector_to_binary(splits)
+                    score = compute_binary_similarity(splits)
+                else:
+                    score = compute_similarity(splits)
                 tmp = [x.cpu().detach().numpy() for x in score]
                 scores.append(tmp)
 
@@ -178,7 +191,11 @@ def hgnn():
                     vectors = model(data)
                     
                 splits = vectors.view(-1, 2, args.g_repr_dim).permute(1, 0, 2)
-                score = compute_similarity(splits).cpu().numpy()
+                if args.is_hash:
+                    splits = vector_to_binary(splits)
+                    score = compute_binary_similarity(splits).cpu().numpy()
+                else:
+                    score = compute_similarity(splits).cpu().numpy()
 
                 for s, l in zip(score, label):
                     scores.append(s)

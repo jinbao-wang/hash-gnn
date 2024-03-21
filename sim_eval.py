@@ -31,6 +31,7 @@ if __name__ == "__main__":
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     init(autoreset=True)
 
+    isTestBinary = 0
     is_print = False
     
     n_node = 20
@@ -42,9 +43,7 @@ if __name__ == "__main__":
     g_repr_dim = 128
     n_test = 1000
 
-    isTestBinary = 0
-
-    model_path = "./model_20_0.2_128_0.8867_0.9270.pth"
+    model_path = "./model_20_0.2_128_0.7279_0.7540.pth"
     idx = 'eval'
     chack_vector = './logs/log_' + idx + '.txt'
 
@@ -80,7 +79,10 @@ if __name__ == "__main__":
                 log = False
 
         splits = vectors.view(-1, 4, g_repr_dim).permute(1, 0, 2)
-        score = compute_similarity(splits)
+        if isTestBinary:
+            score = compute_binary_similarity(splits)
+        else:
+            score = compute_similarity(splits)
         tmp = [x.cpu().detach().numpy() for x in score]
         scores.append(tmp)
         
@@ -96,7 +98,10 @@ if __name__ == "__main__":
             vectors = model(data)
             
         splits = vectors.view(-1, 2, g_repr_dim).permute(1, 0, 2)
-        score = compute_similarity(splits).cpu().numpy()
+        if isTestBinary:
+            score = compute_binary_similarity(splits).cpu().numpy()
+        else:
+            score = compute_similarity(splits).cpu().numpy()
             
         for s, l in zip(score, label):
             scores.append(s)
