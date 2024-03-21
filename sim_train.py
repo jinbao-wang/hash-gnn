@@ -28,7 +28,7 @@ def fill_data_to_device(data_batch, device):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--is_hash", type=bool, default=True)
+    parser.add_argument("--is_hash", type=bool, default=False)
     parser.add_argument("--n_node", "-n", type=int, default=20)
     parser.add_argument("--p_edge", "-p", type=float, default=0.2)
     parser.add_argument("--batch_size", "-b", type=int, default=40)
@@ -43,7 +43,7 @@ def get_args():
     parser.add_argument("--n_iteration", type=int, default=100000)
     parser.add_argument("--graph_coffin", type=float, default=0.001) # 20-0.2:0.014, 50-0.2:0.001
     parser.add_argument("--dmap_coffin", type=float, default=0.01)
-    parser.add_argument("--margin", type=float, default=1.0)
+    parser.add_argument("--margin", type=float, default=2.0)
     parser.add_argument("--n_test", type=int, default=1000)
     parser.add_argument("--gpu", type=str, default="1")
     parser.add_argument("--save-model", type=bool, default=True)
