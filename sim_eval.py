@@ -43,7 +43,7 @@ if __name__ == "__main__":
     g_repr_dim = 128
     n_test = 1000
 
-    model_path = "./model_20_0.2_128_0.7279_0.7540.pth"
+    model_path = "./model_20_0.2_128_0.8016_0.8270.pth"
     idx = 'eval'
     chack_vector = './logs/log_' + idx + '.txt'
 
